@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Position;
 use Illuminate\Http\Request;
+use Validator;
 
 class EmployeeController extends Controller
 {
@@ -12,7 +14,10 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        //
+        $pageTitle = 'Employee List';
+        $employees = Employee::all();
+
+        return view('app.employee.index', compact('pageTitle', 'employees'));
     }
 
     /**
@@ -20,7 +25,10 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        //
+        $pageTitle = 'Create Employee';
+        $positions = Position::all();
+
+        return view('app.employee.create', compact('pageTitle', 'positions'));
     }
 
     /**
@@ -28,7 +36,32 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $messages = [
+            'required' => ':Attribute harus diisi.',
+            'email' => 'Isi :attribute dengan format yang benar',
+            'numeric' => 'Isi :attribute dengan angka'
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'required',
+            'lastName' => 'required',
+            'email' => 'required|email',
+            'age' => 'required|numeric',
+        ], $messages);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $employee = New Employee;
+        $employee->firstname = $request->firstName;
+        $employee->lastname = $request->lastName;
+        $employee->email = $request->email;
+        $employee->age = $request->age;
+        $employee->position_id = $request->position;
+        $employee->save();
+
+        return redirect()->route('employees.index');
     }
 
     /**
@@ -36,7 +69,8 @@ class EmployeeController extends Controller
      */
     public function show(Employee $employee)
     {
-        //
+        $pageTitle = 'Employee Detail';
+        return view('app.employee.show', compact('pageTitle', 'employee'));
     }
 
     /**
